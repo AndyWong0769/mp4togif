@@ -1,0 +1,28 @@
+# macOS
+.DS_Store
+__pycache__/
+*.pyc
+*.pyo
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Large binaries (downloaded at build time)
+ffmpeg.exe
+ffprobe.exe
+ffmpeg
+ffprobe
+ffmpeg.zip
+ffprobe.zip
+*.7z
+
+# Output
+output/

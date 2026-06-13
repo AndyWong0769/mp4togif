@@ -1,0 +1,119 @@
+name: Build MP4toGIF (macOS DMG · Intel x64)
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ------------------------------------------------------------------
+      # Use Rosetta 2 to install Intel Python via /usr/local/ Homebrew
+      # so the .app runs on Intel Macs (including VMware VMs).
+      # ------------------------------------------------------------------
+      - name: Setup Rosetta 2 Intel Homebrew
+        run: |
+          if [ ! -f /usr/local/bin/brew ]; then
+            arch -x86_64 /bin/bash -c \
+              "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" \
+              < /dev/null || true
+          fi
+          echo "Intel Homebrew ready"
+
+      - name: Install Intel Python & PyInstaller
+        run: |
+          arch -x86_64 /bin/bash -c '
+            eval "$(/usr/local/bin/brew shellenv)"
+            brew install python@3.11 python-tk
+            pip3 install --upgrade pip
+            pip3 install -r requirements.txt
+          '
+
+      # ------------------------------------------------------------------
+      # Download STATIC ffmpeg/ffprobe from evermeet.cx.
+      # Self-contained x64 binaries — NO dylib dependencies.
+      # Runs natively on Intel Macs, and on ARM via Rosetta 2.
+      # ------------------------------------------------------------------
+      - name: Download static ffmpeg & ffprobe (Intel x64)
+        run: |
+          echo "Downloading static ffmpeg..."
+          curl -L -o ffmpeg.zip "https://evermeet.cx/ffmpeg/getrelease/zip"
+          if [ $? -ne 0 ] || ! unzip -o ffmpeg.zip; then
+            echo "getrelease/zip failed, trying specific version..."
+            curl -L -o ffmpeg.7z "https://evermeet.cx/ffmpeg/ffmpeg-7.1.1.7z"
+            7z x ffmpeg.7z -y || true
+          fi
+          chmod +x ffmpeg
+          rm -f ffmpeg.zip ffmpeg.7z
+
+          echo "Downloading static ffprobe..."
+          curl -L -o ffprobe.zip "https://evermeet.cx/ffmpeg/getrelease/ffprobe/zip"
+          if [ $? -ne 0 ] || ! unzip -o ffprobe.zip; then
+            echo "getrelease/ffprobe/zip failed, trying specific version..."
+            curl -L -o ffprobe.7z "https://evermeet.cx/ffmpeg/ffprobe-7.1.1.7z"
+            7z x ffprobe.7z -y || true
+          fi
+          chmod +x ffprobe
+          rm -f ffprobe.zip ffprobe.7z
+
+          echo "--- ffmpeg ---"
+          ./ffmpeg -version 2>&1 | head -1 || echo "(runs via Rosetta on ARM)"
+          echo "--- ffprobe ---"
+          ./ffprobe -version 2>&1 | head -1 || echo "(runs via Rosetta on ARM)"
+          echo "--- file type ---"
+          file ffmpeg ffprobe
+
+      # ------------------------------------------------------------------
+      # Build .app bundle with PyInstaller
+      # ------------------------------------------------------------------
+      - name: Build app bundle
+        run: |
+          arch -x86_64 /bin/bash -c '
+            eval "$(/usr/local/bin/brew shellenv)"
+            export MACOSX_DEPLOYMENT_TARGET=11.0
+            ls -la 1.icns
+            pyinstaller --noconsole --windowed --onefile \
+              --name "MP4toGIF" \
+              --icon="1.icns" \
+              --add-binary "ffmpeg:." \
+              --add-binary "ffprobe:." \
+              "mp4togif_modern.py"
+          '
+
+      # ------------------------------------------------------------------
+      # Create DMG installer
+      # ------------------------------------------------------------------
+      - name: Create DMG
+        run: |
+          brew install create-dmg
+          mkdir -p output
+
+          create-dmg \
+            --volname "MP4toGIF" \
+            --volicon "1.icns" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --icon "MP4toGIF.app" 175 190 \
+            --hide-extension "MP4toGIF.app" \
+            --app-drop-link 425 190 \
+            "output/MP4toGIF_Installer.dmg" \
+            "dist/MP4toGIF.app"
+
+      # ------------------------------------------------------------------
+      # Upload DMG as artifact
+      # ------------------------------------------------------------------
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: MP4toGIF-macOS-DMG
+          path: output/MP4toGIF_Installer.dmg
