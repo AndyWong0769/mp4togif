@@ -60,8 +60,9 @@ ctk.set_default_color_theme("blue")
 # ==================== FFmpeg paths ====================
 
 def _bin(name):
-    base = os.path.dirname(os.path.abspath(sys.argv[0]))
-    # macOS / Linux binaries have no .exe extension
+    # PyInstaller onefile extracts bundled binaries to sys._MEIPASS.
+    # Fall back to the script/exe directory for dev runs.
+    base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(sys.argv[0])))
     for variant in (f"{name}.exe", name):
         local = os.path.join(base, variant)
         if os.path.exists(local):
