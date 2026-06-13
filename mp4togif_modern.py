@@ -74,7 +74,7 @@ FFPROBE = _bin("ffprobe")
 
 # Subprocess: ffprobe/ffmpeg stderr can contain binary garbage on CJK Windows.
 # Suppress stderr so the internal reader thread never tries to decode it as GBK.
-import subprocess as _sp  # noqa: E402 — keep after the global subprocess import above
+import subprocess as _sp  # noqa: E402
 SP_NOSTDERR = {"stderr": _sp.DEVNULL, "text": True, "timeout": 15}
 SP_SILENT   = {"stdout": _sp.DEVNULL, "stderr": _sp.DEVNULL, "timeout": 300}
 
@@ -85,8 +85,11 @@ class App(ctk.CTk):
         super().__init__()
 
         self.title("MP4 → GIF")
-        self.geometry("620x850")
-        self.minsize(620, 850)          # locked to this size; user can still maximize
+        self.geometry("620x750")
+        self.minsize(620, 620)
+        # Width locked for layout stability; height free so the user can
+        # resize around the macOS Dock or other screen furniture.
+        self.resizable(False, True)
         self.configure(fg_color=C.BG)
 
         self._set_app_icon()
@@ -100,12 +103,25 @@ class App(ctk.CTk):
         self.v_ratio   = 1.0
         self._busy     = False
 
+        # Fixed header
         self._ui_header()
+
+        # Scrollable body — contains every content panel
+        self.scroll = ctk.CTkScrollableFrame(
+            self, fg_color="transparent",
+            scrollbar_fg_color=C.SURFACE_ALT,
+            scrollbar_button_color=C.BORDER,
+            scrollbar_button_hover_color=C.INK_MUTED,
+        )
+        self.scroll.pack(fill="both", expand=True, padx=0, pady=0)
+
         self._ui_select()
         self._ui_slider()
         self._ui_params()
         self._ui_quality()
         self._ui_output()
+
+        # Fixed bottom bar (always visible regardless of scroll)
         self._ui_action()
 
     # ---------- helpers ----------
@@ -121,30 +137,24 @@ class App(ctk.CTk):
 
     def _set_app_icon(self):
         """Load logo.png as the window / taskbar icon."""
-        # Search order: desktop, script directory, cwd
         candidates = [
             os.path.expanduser("~/Desktop/logo.png"),
             os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "logo.png"),
             os.path.join(os.getcwd(), "logo.png"),
         ]
-        logo_path = None
         for p in candidates:
-            if os.path.isfile(p.replace("\\", "/")):
-                logo_path = p.replace("\\", "/")
-                break
+            p = p.replace("\\", "/")
+            if os.path.isfile(p):
+                try:
+                    img = Image.open(p)
+                    img = img.resize((64, 64), Image.LANCZOS)
+                    self._icon_image = ImageTk.PhotoImage(img)
+                    self.iconphoto(True, self._icon_image)
+                except Exception:
+                    pass
+                return
 
-        if not logo_path:
-            return  # no logo found — silently keep the default icon
-
-        try:
-            img = Image.open(logo_path)
-            img = img.resize((64, 64), Image.LANCZOS)
-            self._icon_image = ImageTk.PhotoImage(img)
-            self.iconphoto(True, self._icon_image)
-        except Exception:
-            pass  # anything goes wrong, just skip
-
-    # ---------- ui sections ----------
+    # ---------- ui: fixed header ----------
 
     def _ui_header(self):
         f = ctk.CTkFrame(self, fg_color="transparent")
@@ -153,10 +163,12 @@ class App(ctk.CTk):
         ctk.CTkLabel(f, text="Video to GIF Converter", font=F.SMALL,
                      text_color=C.INK_MUTED).pack(side="left", padx=(S.SM, 0))
 
+    # ---------- ui: scrollable body ----------
+
     def _ui_select(self):
         """File picker + video info"""
         self.pnl_select = ctk.CTkFrame(
-            self, fg_color=C.SURFACE, corner_radius=10,
+            self.scroll, fg_color=C.SURFACE, corner_radius=10,
             border_width=1, border_color=C.BORDER,
         )
         self.pnl_select.pack(fill="x", padx=S.XL, pady=(S.SM, S.SM))
@@ -184,7 +196,7 @@ class App(ctk.CTk):
     def _ui_slider(self):
         """Time slider"""
         self.pnl_slider = ctk.CTkFrame(
-            self, fg_color=C.SURFACE, corner_radius=10,
+            self.scroll, fg_color=C.SURFACE, corner_radius=10,
             border_width=1, border_color=C.BORDER,
         )
         self.pnl_slider.pack(fill="x", padx=S.XL, pady=(S.SM, S.SM))
@@ -208,7 +220,7 @@ class App(ctk.CTk):
     def _ui_params(self):
         """Conversion parameters — two-row grid for clean alignment"""
         self.pnl_params = ctk.CTkFrame(
-            self, fg_color=C.SURFACE, corner_radius=10,
+            self.scroll, fg_color=C.SURFACE, corner_radius=10,
             border_width=1, border_color=C.BORDER,
         )
         self.pnl_params.pack(fill="x", padx=S.XL, pady=(S.SM, S.SM))
@@ -216,7 +228,7 @@ class App(ctk.CTk):
         grid = ctk.CTkFrame(self.pnl_params, fg_color="transparent")
         grid.pack(fill="x", padx=S.LG, pady=(S.LG, S.MD))
 
-        # Row 0 — labels (aligned over their entries)
+        # Row 0 — labels
         lbls = ctk.CTkFrame(grid, fg_color="transparent")
         ctk.CTkLabel(lbls, text="Width",     font=F.TINY, text_color=C.INK_MUTED,
                      width=64, anchor="w").pack(side="left", padx=(0, S.SM))
@@ -228,7 +240,7 @@ class App(ctk.CTk):
                      width=80, anchor="w").pack(side="left")
         lbls.pack(fill="x")
 
-        # Row 1 — entry fields
+        # Row 1 — entries
         ents = ctk.CTkFrame(grid, fg_color="transparent")
 
         self.e_w = ctk.CTkEntry(ents, width=64, height=32, font=F.BODY,
@@ -245,7 +257,6 @@ class App(ctk.CTk):
         self.e_fps.pack(side="left", padx=(0, S.SM), pady=(2, 0))
         self.e_fps.bind("<KeyRelease>", self._est_size)
 
-        # Duration entry + "s" unit label
         dur_frame = ctk.CTkFrame(ents, fg_color="transparent")
         self.e_dur = ctk.CTkEntry(dur_frame, width=40, height=32, font=F.BODY,
                                   fg_color=C.BG, border_color=C.BORDER,
@@ -255,7 +266,7 @@ class App(ctk.CTk):
         self.e_dur.bind("<KeyRelease>", self._est_size)
         ctk.CTkLabel(dur_frame, text="s", font=F.TINY,
                      text_color=C.INK_MUTED).pack(side="left", padx=(2, 0))
-        dur_frame.pack(side="left", padx=(0, S.SM + 6))  # +6 to compensate for "s" label width
+        dur_frame.pack(side="left", padx=(0, S.SM + 6))
 
         self.e_start = ctk.CTkEntry(ents, width=80, height=32, font=F.BODY,
                                     fg_color=C.BG, border_color=C.BORDER,
@@ -280,7 +291,7 @@ class App(ctk.CTk):
     def _ui_quality(self):
         """Quality slider"""
         self.pnl_qual = ctk.CTkFrame(
-            self, fg_color=C.SURFACE, corner_radius=10,
+            self.scroll, fg_color=C.SURFACE, corner_radius=10,
             border_width=1, border_color=C.BORDER,
         )
         self.pnl_qual.pack(fill="x", padx=S.XL, pady=(S.SM, S.SM))
@@ -310,7 +321,7 @@ class App(ctk.CTk):
     def _ui_output(self):
         """Output settings"""
         self.pnl_out = ctk.CTkFrame(
-            self, fg_color=C.SURFACE, corner_radius=10,
+            self.scroll, fg_color=C.SURFACE, corner_radius=10,
             border_width=1, border_color=C.BORDER,
         )
         self.pnl_out.pack(fill="x", padx=S.XL, pady=(S.SM, S.SM))
@@ -344,10 +355,12 @@ class App(ctk.CTk):
         ).pack(side="right")
         r2.pack(fill="x", pady=(S.MD, 0))
 
+    # ---------- ui: fixed bottom bar ----------
+
     def _ui_action(self):
-        """Convert button + status"""
+        """Convert button + status — always visible below the scroll area."""
         f = ctk.CTkFrame(self, fg_color="transparent")
-        f.pack(fill="x", padx=S.XL, pady=(S.XL, S.XL))
+        f.pack(fill="x", padx=S.XL, pady=(S.SM, S.XL))
 
         self.btn_go = ctk.CTkButton(
             f, text="Convert", font=(F.FAM, 16, "bold"), height=48,
@@ -482,7 +495,6 @@ class App(ctk.CTk):
                 r = subprocess.run(cmd, shell=True, **SP_SILENT)
                 if r.returncode == 0:
                     sz = os.path.getsize(dest) / (1024 * 1024)
-                    # auto-increment filename
                     m = re.search(r"(\d+)$", raw)
                     if m:
                         n = int(m.group(1)) + 1

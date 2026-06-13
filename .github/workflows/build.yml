@@ -80,10 +80,10 @@ jobs:
           arch -x86_64 /bin/bash -c '
             eval "$(/usr/local/bin/brew shellenv)"
             export MACOSX_DEPLOYMENT_TARGET=11.0
-            ls -la 1.icns
+            ls -la 2.icns
             pyinstaller --noconsole --windowed --onefile \
               --name "MP4toGIF" \
-              --icon="1.icns" \
+              --icon="2.icns" \
               --add-binary "ffmpeg:." \
               --add-binary "ffprobe:." \
               "mp4togif_modern.py"
@@ -99,7 +99,7 @@ jobs:
 
           create-dmg \
             --volname "MP4toGIF" \
-            --volicon "1.icns" \
+            --volicon "2.icns" \
             --window-pos 200 120 \
             --window-size 600 400 \
             --icon-size 100 \
