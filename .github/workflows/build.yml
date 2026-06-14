@@ -73,17 +73,6 @@ jobs:
           file ffmpeg ffprobe
 
       # ------------------------------------------------------------------
-      # Generate rounded-corner .icns icon (replaces the one in repo)
-      # ------------------------------------------------------------------
-      - name: Generate rounded-corner icon
-        run: |
-          arch -x86_64 /bin/bash -c '
-            eval "$(/usr/local/bin/brew shellenv)"
-            python3 make_icon.py
-            ls -la 2.icns
-          '
-
-      # ------------------------------------------------------------------
       # Build .app bundle with PyInstaller
       # ------------------------------------------------------------------
       - name: Build app bundle
