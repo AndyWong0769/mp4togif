@@ -52,10 +52,10 @@ ICONS = [
     ("icp4",    16,  True),    # 16x16   PNG
     ("icp5",    32,  True),    # 32x32   PNG
     ("icp6",    64,  True),    # 64x64   PNG
-    ("ic07",   128,  False),   # 128x128 ARGB
-    ("ic08",   256,  False),   # 256x256 ARGB
-    ("ic09",   512,  False),   # 512x512 ARGB
-    ("ic10",  1024,  False),   # 1024x1024 ARGB (required for macOS 10.7+)
+    ("ic07",   128,  True),    # 128x128 PNG (ARGB → blank on modern macOS)
+    ("ic08",   256,  True),    # 256x256 PNG
+    ("ic09",   512,  True),    # 512x512 PNG
+    ("ic10",  1024,  True),    # 1024x1024 PNG
 ]
 
 
