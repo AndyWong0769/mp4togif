@@ -1,19 +1,19 @@
 @echo off
 chcp 65001 >nul
 echo ============================================
-echo   mp4togif — 打包为独立 .exe
+echo   视频转GIF — 打包为独立 .exe
 echo ============================================
 echo.
 
 pyinstaller --onefile --windowed ^
-  --name "MP4toGIF" ^
+  --name "视频转GIF" ^
   --add-data "ffmpeg.exe;." ^
   --add-data "ffprobe.exe;." ^
-  --icon=NONE ^
+  --icon="2.ico" ^
   mp4togif_modern.py
 
 echo.
 echo ============================================
-echo   打包完成! 输出在 dist\MP4toGIF.exe
+echo   打包完成! 输出在 dist\视频转GIF.exe
 echo ============================================
 pause

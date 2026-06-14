@@ -1,16 +1,16 @@
 """
 mp4togif — Modern Edition
-Convert MP4 videos to high-quality GIFs.
-Built with CustomTkinter + Impeccable Product Register design system.
+将视频转换为高质量 GIF 的桌面工具（支持所有 FFmpeg 视频格式）
+基于 CustomTkinter + Impeccable Product Register 设计规范
 
-Design principles:
-  - Color: Restrained — dark theme + single accent hue
-  - Type: Single font family (Segoe UI), hierarchy via weight & size
-  - Layout: Clean sections, no nested cards
-  - Interaction: All controls cover hover / active / disabled states
-  - Motion: CustomTkinter built-in 150–250 ms transitions
+设计原则:
+  - 色彩策略: Restrained — 暗色主题 + 单一强调色
+  - 字体: 单一字体族 (Segoe UI)，字重区分层级
+  - 布局: 清晰分区，无嵌套卡片
+  - 交互: 所有按钮覆盖 hover/active/disabled 状态
+  - 动效: CustomTkinter 自带 150-250ms 过渡
 
-Package: pyinstaller --onefile --windowed --add-data "ffmpeg.exe;." --add-data "ffprobe.exe;." mp4togif_modern.py
+打包: pyinstaller --onefile --windowed --add-data "ffmpeg.exe;." --add-data "ffprobe.exe;." mp4togif_modern.py
 """
 
 import os
@@ -84,7 +84,7 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("MP4 → GIF")
+        self.title("视频 → GIF")
         self.geometry("680x720")
         self.minsize(580, 580)
         self.resizable(True, True)
@@ -207,8 +207,8 @@ class App(ctk.CTk):
     def _ui_header(self):
         f = ctk.CTkFrame(self, fg_color="transparent")
         f.pack(fill="x", padx=S.XL, pady=(S.XL, S.SM))
-        ctk.CTkLabel(f, text="MP4 → GIF", font=F.H1, text_color=C.INK).pack(side="left")
-        ctk.CTkLabel(f, text="Video to GIF Converter", font=F.SMALL,
+        ctk.CTkLabel(f, text="视频 → GIF", font=F.H1, text_color=C.INK).pack(side="left")
+        ctk.CTkLabel(f, text="视频转 GIF 工具", font=F.SMALL,
                      text_color=C.INK_MUTED).pack(side="left", padx=(S.SM, 0))
 
     # ---------- ui: scrollable body ----------
@@ -228,14 +228,14 @@ class App(ctk.CTk):
                                           text_color=C.INK_MUTED)
         self.lbl_file_icon.pack()
 
-        self.lbl_file_name = ctk.CTkLabel(inner, text="No file selected", font=F.SMALL,
+        self.lbl_file_name = ctk.CTkLabel(inner, text="未选择文件", font=F.SMALL,
                                           text_color=C.INK_MUTED)
         self.lbl_file_name.pack(pady=(S.XS, 0))
 
         self.lbl_file_meta = ctk.CTkLabel(inner, text="", font=F.H2, text_color=C.INK)
 
         ctk.CTkButton(
-            inner, text="Select MP4 File", font=F.SMALL,
+            inner, text="选择视频文件", font=F.SMALL,
             fg_color=C.SURFACE_ALT, hover_color=C.BORDER,
             text_color=C.INK, border_width=1, border_color=C.BORDER,
             corner_radius=8, height=34, command=self._pick_file,
@@ -251,7 +251,7 @@ class App(ctk.CTk):
 
         hdr = ctk.CTkFrame(self.pnl_slider, fg_color="transparent")
         hdr.pack(fill="x", padx=S.LG, pady=(S.LG, S.SM))
-        ctk.CTkLabel(hdr, text="Start Time", font=F.SMALL,
+        ctk.CTkLabel(hdr, text="开始时间", font=F.SMALL,
                      text_color=C.INK_SUB).pack(side="left")
         self.lbl_time = ctk.CTkLabel(hdr, text="00:00:00", font=F.H2, text_color=C.INK)
         self.lbl_time.pack(side="right")
@@ -278,13 +278,13 @@ class App(ctk.CTk):
 
         # Row 0 — labels
         lbls = ctk.CTkFrame(grid, fg_color="transparent")
-        ctk.CTkLabel(lbls, text="Width",     font=F.TINY, text_color=C.INK_MUTED,
+        ctk.CTkLabel(lbls, text="输出宽度",     font=F.TINY, text_color=C.INK_MUTED,
                      width=64, anchor="w").pack(side="left", padx=(0, S.SM))
-        ctk.CTkLabel(lbls, text="FPS",       font=F.TINY, text_color=C.INK_MUTED,
+        ctk.CTkLabel(lbls, text="每秒帧数",       font=F.TINY, text_color=C.INK_MUTED,
                      width=48, anchor="w").pack(side="left", padx=(0, S.SM))
-        ctk.CTkLabel(lbls, text="Duration",  font=F.TINY, text_color=C.INK_MUTED,
+        ctk.CTkLabel(lbls, text="截取时长",  font=F.TINY, text_color=C.INK_MUTED,
                      width=62, anchor="w").pack(side="left", padx=(0, S.SM))
-        ctk.CTkLabel(lbls, text="Start At",  font=F.TINY, text_color=C.INK_MUTED,
+        ctk.CTkLabel(lbls, text="起始时间",  font=F.TINY, text_color=C.INK_MUTED,
                      width=80, anchor="w").pack(side="left")
         lbls.pack(fill="x")
 
@@ -312,7 +312,7 @@ class App(ctk.CTk):
         self.e_dur.insert(0, "3")
         self.e_dur.pack(side="left", pady=(2, 0))
         self.e_dur.bind("<KeyRelease>", self._est_size)
-        ctk.CTkLabel(dur_frame, text="s", font=F.TINY,
+        ctk.CTkLabel(dur_frame, text="秒", font=F.TINY,
                      text_color=C.INK_MUTED).pack(side="left", padx=(2, 0))
         dur_frame.pack(side="left", padx=(0, S.SM + 6))
 
@@ -346,9 +346,9 @@ class App(ctk.CTk):
 
         hdr = ctk.CTkFrame(self.pnl_qual, fg_color="transparent")
         hdr.pack(fill="x", padx=S.LG, pady=(S.LG, S.SM))
-        ctk.CTkLabel(hdr, text="Color Palette", font=F.SMALL,
+        ctk.CTkLabel(hdr, text="调色板颜色数", font=F.SMALL,
                      text_color=C.INK_SUB).pack(side="left")
-        self.lbl_colors = ctk.CTkLabel(hdr, text="128 colors", font=F.H2, text_color=C.ACCENT)
+        self.lbl_colors = ctk.CTkLabel(hdr, text="128 色", font=F.H2, text_color=C.ACCENT)
         self.lbl_colors.pack(side="right")
 
         self.sld_qual = ctk.CTkSlider(
@@ -362,7 +362,7 @@ class App(ctk.CTk):
 
         ft = ctk.CTkFrame(self.pnl_qual, fg_color="transparent")
         ft.pack(fill="x", padx=S.LG, pady=(S.SM, S.LG))
-        ctk.CTkLabel(ft, text="Est. Size", font=F.SMALL, text_color=C.INK_MUTED).pack(side="left")
+        ctk.CTkLabel(ft, text="预估大小", font=F.SMALL, text_color=C.INK_MUTED).pack(side="left")
         self.lbl_size = ctk.CTkLabel(ft, text="-- MB", font=F.BODY, text_color=C.INK_SUB)
         self.lbl_size.pack(side="right")
 
@@ -379,14 +379,14 @@ class App(ctk.CTk):
 
         # Filename row
         r1 = ctk.CTkFrame(inner, fg_color="transparent")
-        ctk.CTkLabel(r1, text="Filename", font=F.SMALL, text_color=C.INK_SUB).pack(side="left")
+        ctk.CTkLabel(r1, text="文件名", font=F.SMALL, text_color=C.INK_SUB).pack(side="left")
         self.e_name = ctk.CTkEntry(r1, width=100, height=32, font=F.BODY,
                                    fg_color=C.BG, border_color=C.BORDER,
                                    corner_radius=6, text_color=C.INK)
         self.e_name.insert(0, "1")
         self.e_name.pack(side="left", padx=(S.SM, S.XS))
         ctk.CTkLabel(r1, text=".gif", font=F.BODY, text_color=C.INK_MUTED).pack(side="left")
-        ctk.CTkLabel(r1, text="auto-increments after save", font=F.TINY,
+        ctk.CTkLabel(r1, text="完成后自动递增", font=F.TINY,
                      text_color=C.INK_MUTED).pack(side="left", padx=(S.SM, 0))
         r1.pack(fill="x")
 
@@ -396,7 +396,7 @@ class App(ctk.CTk):
                                      font=F.TINY, text_color=C.INK_MUTED, anchor="w")
         self.lbl_path.pack(side="left", fill="x", expand=True)
         ctk.CTkButton(
-            r2, text="Change", width=56, height=26, font=F.TINY,
+            r2, text="更改目录", width=72, height=26, font=F.TINY,
             fg_color=C.SURFACE_ALT, hover_color=C.BORDER,
             text_color=C.INK_SUB, border_width=1, border_color=C.BORDER,
             corner_radius=6, command=self._pick_dir,
@@ -411,7 +411,7 @@ class App(ctk.CTk):
         f.pack(fill="x", padx=S.XL, pady=(S.SM, S.XL))
 
         self.btn_go = ctk.CTkButton(
-            f, text="Convert", font=(F.FAM, 16, "bold"), height=48,
+            f, text="开始转换", font=(F.FAM, 16, "bold"), height=48,
             fg_color=C.ACCENT, hover_color=C.ACCENT_HOVER,
             text_color="#fff", corner_radius=10,
             command=self._convert,
@@ -424,7 +424,17 @@ class App(ctk.CTk):
     # ---------- callbacks ----------
 
     def _pick_file(self):
-        p = filedialog.askopenfilename(filetypes=[("MP4 Video", "*.mp4")])
+        p = filedialog.askopenfilename(filetypes=[
+            ("所有视频文件", "*.mp4 *.avi *.mkv *.mov *.wmv *.flv *.webm *.m4v *.mpg *.mpeg *.3gp *.ts *.m2ts *.vob *.ogv *.rmvb *.asf *.f4v"),
+            ("MP4 视频", "*.mp4"),
+            ("AVI 视频", "*.avi"),
+            ("MKV 视频", "*.mkv"),
+            ("MOV 视频", "*.mov"),
+            ("WMV 视频", "*.wmv"),
+            ("FLV 视频", "*.flv"),
+            ("WebM 视频", "*.webm"),
+            ("所有文件", "*.*"),
+        ])
         if p:
             self._load(p)
 
@@ -438,7 +448,7 @@ class App(ctk.CTk):
         path = path.replace("\\", "/")
         self.file_path = path
         self.lbl_file_icon.configure(text="⏳")
-        self.lbl_file_name.configure(text="Analyzing...")
+        self.lbl_file_name.configure(text="解析中...")
 
         def task():
             try:
@@ -481,10 +491,10 @@ class App(ctk.CTk):
 
     def _load_err(self, msg):
         self.lbl_file_icon.configure(text="❌")
-        self.lbl_file_name.configure(text=f"Parse error: {msg}", text_color=C.ERROR)
+        self.lbl_file_name.configure(text=f"解析失败: {msg}", text_color=C.ERROR)
         self.after(3000, lambda: (
             self.lbl_file_icon.configure(text="📂"),
-            self.lbl_file_name.configure(text="No file selected", text_color=C.INK_MUTED),
+            self.lbl_file_name.configure(text="未选择文件", text_color=C.INK_MUTED),
         ))
 
     def _est_size(self, *_):
@@ -509,12 +519,12 @@ class App(ctk.CTk):
         self.e_start.insert(0, hms)
 
     def _on_quality(self, val):
-        self.lbl_colors.configure(text=f"{int(float(val))} colors")
+        self.lbl_colors.configure(text=f"{int(float(val))} 色")
         self._est_size()
 
     def _convert(self):
         if not self.file_path:
-            self.lbl_status.configure(text="Please select a video file first", text_color=C.WARNING)
+            self.lbl_status.configure(text="请先选择视频文件", text_color=C.WARNING)
             return
         if self._busy:
             return
@@ -528,8 +538,8 @@ class App(ctk.CTk):
         dest   = os.path.join(self.out_dir, f"{raw}.gif").replace("\\", "/")
 
         self._busy = True
-        self.lbl_status.configure(text="⏳ Converting...", text_color=C.WARNING)
-        self.btn_go.configure(text="Converting...", state="disabled", fg_color=C.SURFACE_ALT)
+        self.lbl_status.configure(text="⏳ 转换中...", text_color=C.WARNING)
+        self.btn_go.configure(text="转换中...", state="disabled", fg_color=C.SURFACE_ALT)
 
         def task():
             cmd = (
@@ -561,14 +571,14 @@ class App(ctk.CTk):
         self._busy = False
         if ok:
             self.lbl_status.configure(
-                text=f"✓ Done · {round(size_mb, 2)} MB", text_color=C.SUCCESS)
+                text=f"✓ 完成 · {round(size_mb, 2)} MB", text_color=C.SUCCESS)
             if next_name:
                 self.e_name.delete(0, "end")
                 self.e_name.insert(0, next_name)
         else:
-            self.lbl_status.configure(text="✗ Failed", text_color=C.ERROR)
+            self.lbl_status.configure(text="✗ 转换失败", text_color=C.ERROR)
         self.btn_go.configure(
-            text="Convert", state="normal", fg_color=C.ACCENT)
+            text="开始转换", state="normal", fg_color=C.ACCENT)
 
 
 if __name__ == "__main__":

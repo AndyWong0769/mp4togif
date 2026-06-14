@@ -1,4 +1,4 @@
-name: Build MP4toGIF (macOS DMG · Intel x64)
+name: Build 视频转GIF (macOS DMG · Intel x64)
 
 on:
   push:
@@ -82,7 +82,7 @@ jobs:
             export MACOSX_DEPLOYMENT_TARGET=11.0
             ls -la 2.icns
             pyinstaller --noconsole --windowed --onefile \
-              --name "MP4toGIF" \
+              --name "视频转GIF" \
               --icon="2.icns" \
               --add-binary "ffmpeg:." \
               --add-binary "ffprobe:." \
@@ -98,16 +98,16 @@ jobs:
           mkdir -p output
 
           create-dmg \
-            --volname "MP4toGIF" \
+            --volname "视频转GIF" \
             --volicon "2.icns" \
             --window-pos 200 120 \
             --window-size 600 400 \
             --icon-size 100 \
-            --icon "MP4toGIF.app" 175 190 \
-            --hide-extension "MP4toGIF.app" \
+            --icon "视频转GIF.app" 175 190 \
+            --hide-extension "视频转GIF.app" \
             --app-drop-link 425 190 \
-            "output/MP4toGIF_Installer.dmg" \
-            "dist/MP4toGIF.app"
+            "output/视频转GIF_Installer.dmg" \
+            "dist/视频转GIF.app"
 
       # ------------------------------------------------------------------
       # Upload DMG as artifact
@@ -115,5 +115,5 @@ jobs:
       - name: Upload DMG
         uses: actions/upload-artifact@v4
         with:
-          name: MP4toGIF-macOS-DMG
-          path: output/MP4toGIF_Installer.dmg
+          name: 视频转GIF-macOS-DMG
+          path: output/视频转GIF_Installer.dmg
