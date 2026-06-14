@@ -85,11 +85,9 @@ class App(ctk.CTk):
         super().__init__()
 
         self.title("MP4 → GIF")
-        self.geometry("620x750")
-        self.minsize(620, 620)
-        # Width locked for layout stability; height free so the user can
-        # resize around the macOS Dock or other screen furniture.
-        self.resizable(False, True)
+        self.geometry("680x720")
+        self.minsize(580, 580)
+        self.resizable(True, True)
         self.configure(fg_color=C.BG)
 
         self._set_app_icon()
@@ -135,8 +133,29 @@ class App(ctk.CTk):
         h, m, s = int(sec // 3600), int((sec % 3600) // 60), int(sec % 60)
         return f"{h:02d}:{m:02d}:{s:02d}"
 
+    @staticmethod
+    def _round_corners(im, radius=None):
+        """Return a copy of *im* with rounded transparent corners.
+        If *radius* is omitted, it defaults to 25% of the shorter side."""
+        im = im.convert("RGBA")
+        w, h = im.size
+        if radius is None:
+            radius = int(min(w, h) * 0.22)
+        radius = max(1, min(radius, w // 2, h // 2))
+        mask = Image.new("L", (w, h), 0)
+        from PIL import ImageDraw
+        draw = ImageDraw.Draw(mask)
+        draw.rounded_rectangle([(0, 0), (w - 1, h - 1)], radius=radius, fill=255)
+        rounded = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        rounded.paste(im, mask=mask)
+        return rounded
+
     def _set_app_icon(self):
-        """Load logo.png as the window / taskbar icon."""
+        """Load logo.png OR generate a default icon — always rounded corners."""
+        size = 64
+        img = None
+
+        # 1) Try to load a user-provided logo.png
         candidates = [
             os.path.expanduser("~/Desktop/logo.png"),
             os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "logo.png"),
@@ -146,13 +165,42 @@ class App(ctk.CTk):
             p = p.replace("\\", "/")
             if os.path.isfile(p):
                 try:
-                    img = Image.open(p)
-                    img = img.resize((64, 64), Image.LANCZOS)
-                    self._icon_image = ImageTk.PhotoImage(img)
-                    self.iconphoto(True, self._icon_image)
+                    img = Image.open(p).resize((size, size), Image.LANCZOS)
+                    break
                 except Exception:
                     pass
-                return
+
+        # 2) Fallback — generate a clean default icon
+        if img is None:
+            try:
+                from PIL import ImageDraw as _ID
+                img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+                draw = _ID.Draw(img)
+                # Solid rounded-rect background (accent blue)
+                draw.rounded_rectangle(
+                    [(2, 2), (size - 3, size - 3)],
+                    radius=size // 4,
+                    fill=(74, 140, 240, 255),  # C.ACCENT
+                )
+                # "▶" play triangle simplified as a white polygon
+                cx, cy = size // 2, size // 2
+                tri = [
+                    (cx - 8, cy - 13),
+                    (cx - 8, cy + 13),
+                    (cx + 14, cy),
+                ]
+                draw.polygon(tri + [tri[0]], fill=(255, 255, 255, 255))
+            except Exception:
+                pass
+
+        # 3) Apply rounded corners & set as window icon
+        if img is not None:
+            try:
+                img = App._round_corners(img)
+                self._icon_image = ImageTk.PhotoImage(img)
+                self.iconphoto(True, self._icon_image)
+            except Exception:
+                pass
 
     # ---------- ui: fixed header ----------
 
